@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turing Machines Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.svg">
+</head>
+
+<body>
+    <h1>Turing machines simulator</h1>
+
+    <p>TM code format: <code>State Symbol > NewSymbol Direction NewState</code></p>
+    <p>Example: <code>A 1 -> 0 R B</code></p>
+    
+    <label>Preset examples:</label>
+    <select id="preset_select">
+    <option value="">Select preset</option>
+    <option value="increment">Unary increment</option>
+    <option value="decrement">Unary decrement</option>
+    <option value="zero">Unary set to 0</option>
+    <option value="double">Unary double</option>
+    </select>
+
+    <div class="code_container">
+    <div class="line_numbers" id="line_numbers"></div>
+    <textarea id="tm_code" rows="10" cols="60">A 1 -> 1 R A</textarea>
+    </div>
+
+    <div class="controls">
+    <button id="step" onclick="step()">Step</button>
+    <button id="run" onclick="toggle_run()">Run</button>
+    <button id="reset" onclick="reset()">Reset</button>
+
+    <input type="range" id="speed_slider" min="50" max="1000" step="50" value="200" />
+    <span id="speed_label">Speed: 200ms</span>
+    </div>
+
+    <div class="controls">
+    <label>Starting state:</label>
+    <input type="text" id="start_state" value="A" />
+
+    <label>Tape input:</label>
+    <input type="text" id="tape_input" value="111" />
+    </div>
+
+    <div id="status"></div>
+    <div id="tape"></div>
+
+    <script src="tm_script.js"></script>
+</body>
+</html>
