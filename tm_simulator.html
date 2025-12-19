@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turing Machines Simulator</title>
+    <title>Turing machines simulator</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="favicon.svg">
 </head>
@@ -15,6 +15,11 @@
     <p>TM code format: <code>State Symbol > NewSymbol Direction NewState</code></p>
     <p>Example: <code>A 1 -> 0 R B</code></p>
     
+    <hr>
+
+    <div id="status"></div>
+    <div id="tape"></div>
+
     <label>Preset examples:</label>
     <select id="preset_select">
     <option value="">Select preset</option>
@@ -46,8 +51,13 @@
     <input type="text" id="tape_input" value="111" />
     </div>
 
-    <div id="status"></div>
-    <div id="tape"></div>
+    <hr>
+
+    <div class="controls">
+    <label>Import (standard format):</label>
+    <input type="text" id="standard_format" value="" />
+    <button id="import" onclick="import_tm()">Import</button>
+    </div>
 
     <script src="tm_script.js"></script>
 </body>

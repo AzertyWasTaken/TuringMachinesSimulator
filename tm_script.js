@@ -1,12 +1,14 @@
 // Initialize TM
 
-const default_symbol = 0;
+const default_symbol = "0";
 const default_state = "A";
 
 let tape = {};
 let head = 0;
 let state = default_state;
 let rules = {};
+
+let last_move = "R";
 
 let steps = 0;
 let halted = false;
@@ -19,6 +21,36 @@ let run_delay = 200;
 const tm_code_el = document.getElementById("tm_code");
 const line_numbers_el = document.getElementById("line_numbers");
 const preset_select_el = document.getElementById("preset_select");
+const speed_slider_el = document.getElementById("speed_slider");
+const speed_label_el = document.getElementById("speed_label");
+
+// State names
+
+const states_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function state_name(n) {
+    return states_alphabet[n];
+}
+
+// Line numbers
+
+function update_line_numbers() {
+    const lines = tm_code_el.value.split("\n").length;
+    line_numbers_el.innerHTML = "";
+    
+    for (let i = 1; i <= lines; i++) {
+        const div = document.createElement("div");
+        div.textContent = i;
+        line_numbers_el.appendChild(div);
+    }
+}
+
+tm_code_el.addEventListener("input", update_line_numbers);
+tm_code_el.addEventListener("scroll", () => {
+    line_numbers_el.scrollTop = tm_code_el.scrollTop;
+});
+
+update_line_numbers();
 
 // Parse TM code
 
@@ -27,9 +59,11 @@ function parse_rules(code) {
     const lines = code.split("\n");
 
     for (const line of lines) {
-        if (!line.trim()) continue;
+        if (!line.trim() || line.slice(0, 2) == "//") {continue;}
         
         const [left, right] = line.split("->");
+        if (!right) {continue;}
+
         const [state, read] = left.trim().split(/\s+/);
         const [write, move, next] = right.trim().split(/\s+/);
 
@@ -42,6 +76,46 @@ function parse_rules(code) {
         rule.next = next;
     }
     return new_rules;
+}
+
+// Import TM
+
+function trim_trailing_newlines(str) {
+    return str.replace(/\n+$/, "");
+}
+
+function is_rule_defined(rule) {
+    for (const char of rule) {
+        if (char == "-") {return false;}
+    }
+    return true;
+}
+
+function parse_standard_format(code) {
+    let new_code = "";
+    const state_rules = code.split("_");
+
+    for (st = 0; st < state_rules.length; st++) {
+        const state_rule = state_rules[st];
+        const symbol_rules = state_rule.match(/.{1,3}/g);
+
+        for (sy = 0; sy < symbol_rules.length; sy++) {
+            const symbol_rule = symbol_rules[sy];
+            if (!is_rule_defined(symbol_rule)) {continue;}
+
+            new_code += [state_name(st), String(sy), "->",
+                symbol_rule[0], symbol_rule[1], symbol_rule[2]].join(" ") + "\n";
+        }
+        new_code += "\n";
+    }
+    return trim_trailing_newlines(new_code);
+}
+a = "abc"+"\n"+"\n"
+console.log(a.slice(0, -16))
+function import_tm() {
+    const input = document.getElementById("standard_format").value;
+    tm_code_el.value = parse_standard_format(input);
+    update_line_numbers();
 }
 
 // Tape helpers
@@ -79,26 +153,6 @@ function render_tape() {
 
 window.addEventListener("resize", render_tape);
 
-// Line numbers
-
-function update_line_numbers() {
-    const lines = tm_code_el.value.split("\n").length;
-    line_numbers_el.innerHTML = "";
-    
-    for (let i = 1; i <= lines; i++) {
-        const div = document.createElement("div");
-        div.textContent = i;
-        line_numbers_el.appendChild(div);
-    }
-}
-
-tm_code_el.addEventListener("input", update_line_numbers);
-tm_code_el.addEventListener("scroll", () => {
-    line_numbers_el.scrollTop = tm_code_el.scrollTop;
-});
-
-update_line_numbers();
-
 // Presets
 
 const PRESETS = {
@@ -122,6 +176,20 @@ preset_select_el.addEventListener("change", () => {
 
 // Execute TM
 
+function move_head(move) {
+    if (move == "L") {
+        head--;
+        last_move = "L";
+    } else if (move == "R") {
+        head++;
+        last_move = "R";
+    } else if (move == "P") {
+        move_head(last_move);
+    } else if (move == "T") {
+        move_head(last_move == "R" ? "L" : "R");
+    }
+}
+
 function step() {
     if (halted) {return;}
 
@@ -136,8 +204,7 @@ function step() {
     }
 
     tape[head] = rule.write;
-    if (rule.move == "L") {head--;}
-    else if (rule.move == "R") {head++;}
+    move_head(rule.move);
     state = rule.next;
 
     steps++;
@@ -170,12 +237,9 @@ function toggle_run() {
 
 // Speed control
 
-const speed_slider = document.getElementById("speed_slider");
-const speed_label = document.getElementById("speed_label");
-
-speed_slider.addEventListener("input", () => {
-    run_delay = Number(speed_slider.value);
-    speed_label.textContent = `Speed: ${run_delay}ms`;
+speed_slider_el.addEventListener("input", () => {
+    run_delay = Number(speed_slider_el.value);
+    speed_label_el.textContent = `Speed: ${run_delay}ms`;
     if (running) {
         stop_run();
         start_run();
@@ -196,6 +260,8 @@ function reset() {
 
     steps = 0;
     halted = false;
+
+    last_move = "R";
 
     rules = parse_rules(document.getElementById("tm_code").value);
     document.getElementById("run").disabled = false;

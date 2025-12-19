@@ -17,22 +17,26 @@ code {
     font-size: 16px;
 }
 
+hr {
+    border: 2px solid #404040;
+}
+
 /* Scrollbar */
 
 ::-webkit-scrollbar {
-  width: 16px;
+    width: 16px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #303030;
+    background: #303030;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #808080;
+    background: #808080;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #606060;
+    background: #606060;
 }
 
 /* Code editor */
@@ -41,6 +45,7 @@ select {
 	background-color: #404040;
 	color: #FFFFFF;
     margin: 0px 12px 12px 12px;
+    padding: 2px;
 }
 
 option {
