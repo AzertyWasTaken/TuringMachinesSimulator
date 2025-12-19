@@ -14,7 +14,9 @@
 
     <p>TM code format: <code>State Symbol > NewSymbol Direction NewState</code></p>
     <p>Example: <code>A 1 -> 0 R B</code></p>
-    
+    <p>Lines that start with <code>//</code> are ignored by the code parser.</p>
+    <p>Do not forget to press the Reset button before testing a preset.</p>
+
     <hr>
 
     <div id="status"></div>
@@ -27,11 +29,16 @@
     <option value="decrement">Unary decrement</option>
     <option value="zero">Unary set to 0</option>
     <option value="double">Unary double</option>
+    <option value="bb3">BB(3) champion</option>
+    <option value="bb4">BB(4) champion</option>
+    <option value="bb5">BB(5) champion</option>
     </select>
 
     <div class="code_container">
     <div class="line_numbers" id="line_numbers"></div>
-    <textarea id="tm_code" rows="10" cols="60">A 1 -> 1 R A</textarea>
+    <textarea id="tm_code" rows="10" cols="60">A 1 -> 1 R A
+
+// This is a comment.</textarea>
     </div>
 
     <div class="controls">

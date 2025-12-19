@@ -110,8 +110,7 @@ function parse_standard_format(code) {
     }
     return trim_trailing_newlines(new_code);
 }
-a = "abc"+"\n"+"\n"
-console.log(a.slice(0, -16))
+
 function import_tm() {
     const input = document.getElementById("standard_format").value;
     tm_code_el.value = parse_standard_format(input);
@@ -165,6 +164,21 @@ C 1 -> 1 R C\nC 0 -> 1 R D\n
 D 0 -> 1 L E\n
 E 0 -> 0 L F\nE 1 -> 1 L E\n
 F 0 -> 0 R A\nF 1 -> 1 L F`,
+    bb3: `// Empty the tape input before running this preset.\n\n
+A 0 -> 1 R B\nA 1 -> 1 R Z\n
+B 0 -> 1 L B\nB 1 -> 0 R C\n
+C 0 -> 1 L C\nC 1 -> 1 L A`,
+    bb4: `// Empty the tape input before running this preset.\n\n
+A 0 -> 1 R B\nA 1 -> 1 L B\n
+B 0 -> 1 L A\nB 1 -> 0 L C\n
+C 0 -> 1 R Z\nC 1 -> 1 L D\n
+D 0 -> 1 R D\nD 1 -> 0 R A`,
+    bb5: `// Empty the tape input before running this preset.\n\n
+A 0 -> 1 R B\nA 1 -> 1 L C\n
+B 0 -> 1 R C\nB 1 -> 1 R B\n
+C 0 -> 1 R D\nC 1 -> 0 L E\n
+D 0 -> 1 L A\nD 1 -> 1 L D\n
+E 0 -> 1 R Z\nE 1 -> 0 L A`,
 };
 
 preset_select_el.addEventListener("change", () => {
