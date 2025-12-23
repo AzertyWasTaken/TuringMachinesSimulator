@@ -1,1 +1,1 @@
-This is a Turing machines simulator website.
+This is an open-source Turing machines simulator website.

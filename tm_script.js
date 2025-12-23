@@ -16,6 +16,19 @@ let running = false;
 let runInterval = null;
 let run_delay = 200;
 
+let symbol_colors = {};
+const palette = [
+    "#FF6060",
+    "#4080FF",
+    "#60FF60",
+    "#FFFF40",
+    "#FF60FF",
+    "#60E0FF",
+];
+
+let history = [];
+const memory = 256;
+
 // DOM elements
 
 const tm_code_el = document.getElementById("tm_code");
@@ -23,14 +36,15 @@ const line_numbers_el = document.getElementById("line_numbers");
 const preset_select_el = document.getElementById("preset_select");
 const speed_slider_el = document.getElementById("speed_slider");
 const speed_label_el = document.getElementById("speed_label");
+const run_el = document.getElementById("run");
 
 // State names
 
 const states_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const symbols_alphabet = "0123456789";
 
-function state_name(n) {
-    return states_alphabet[n];
-}
+function state_name(n) {return states_alphabet[n];}
+function symbol_name(n) {return symbols_alphabet[n];}
 
 // Line numbers
 
@@ -54,6 +68,16 @@ update_line_numbers();
 
 // Parse TM code
 
+function object_length(object) {
+    return Object.keys(object).length;
+}
+
+function assign_symbol_color(symbol) {
+    if (symbol != default_symbol && !(symbol in symbol_colors)) {
+        symbol_colors[symbol] = palette[object_length(symbol_colors) % palette.length];
+    }
+}
+
 function parse_rules(code) {
     let new_rules = [];
     const lines = code.split("\n");
@@ -74,6 +98,8 @@ function parse_rules(code) {
         rule.write = write;
         rule.move = move;
         rule.next = next;
+
+        assign_symbol_color(write);
     }
     return new_rules;
 }
@@ -103,7 +129,7 @@ function parse_standard_format(code) {
             const symbol_rule = symbol_rules[sy];
             if (!is_rule_defined(symbol_rule)) {continue;}
 
-            new_code += [state_name(st), String(sy), "->",
+            new_code += [state_name(st), symbol_name(sy), "->",
                 symbol_rule[0], symbol_rule[1], symbol_rule[2]].join(" ") + "\n";
         }
         new_code += "\n";
@@ -139,15 +165,18 @@ function render_tape() {
 
     for (let i = head - half; i <= head + half; i++) {
         const cell = document.createElement("div");
+        const symbol = read_cell(i);
+
         cell.className = "cell" + (i == head ? " head" : "");
-        cell.textContent = read_cell(i);
+        cell.textContent = symbol;
+        cell.style.color = i == head ? "#FFFFFF" : (symbol_colors[symbol] ??= "#FFFFFF");
         tape_div.appendChild(cell);
     }
 
     document.getElementById("status").textContent =
     (halted ? "Halted, " : "") + `State: ${state}, Head: ${head}, Steps: ${steps}`;
 
-    document.getElementById("run").disabled = halted;
+    run_el.disabled = halted;
 }
 
 window.addEventListener("resize", render_tape);
@@ -155,25 +184,45 @@ window.addEventListener("resize", render_tape);
 // Presets
 
 const PRESETS = {
-    increment: `A 0 -> 1 L B\nA 1 -> 1 L A\n\nB 0 -> 0 R Z`,
-    decrement: `A 1 -> 0 R Z`,
-    zero: `A 0 -> 0 R Z\nA 1 -> 0 R A`,
-    double: `A 0 -> 0 R Z\nA 1 -> 0 R B\n
+    increment: `// Input must be a string of 1s.\n\n
+A 0 -> 1 L B\nA 1 -> 1 L A\n
+B 0 -> 0 R Z`,
+    decrement: `// Input must be a string of 1s.\n\n
+A 1 -> 0 R Z`,
+    zero: `// Input must be a string of 1s.\n\n
+A 0 -> 0 R Z\nA 1 -> 0 R A`,
+    double: `// Input must be a string of 1s.\n\n
+A 0 -> 0 R Z\nA 1 -> 0 R B\n
 B 0 -> 0 R C\nB 1 -> 1 R B\n
 C 1 -> 1 R C\nC 0 -> 1 R D\n
 D 0 -> 1 L E\n
 E 0 -> 0 L F\nE 1 -> 1 L E\n
 F 0 -> 0 R A\nF 1 -> 1 L F`,
-    bb3: `// Empty the tape input before running this preset.\n\n
+    addition: `// Input must be two strings of 1s separated by a 0.\n\n
+A 1 -> 0 R B\n
+B 0 -> 1 L C\nB 1 -> 1 R B\n
+C 0 -> 0 R Z\nC 1 -> 1 L C`,
+    multiplication: `// Input must be two strings of 1s separated by a 0.\n\n
+A 0 -> 0 R J\nA 1 -> 0 R B\n
+B 0 -> 0 R C\nB 1 -> 1 R B\n
+C 0 -> 0 L G\nC 1 -> 1 R D\n
+D 0 -> 0 R E\nD 1 -> 2 R D\n
+E 0 -> 1 L F\nE 1 -> 1 R E\n
+F 0 -> 0 L G\nF 1 -> 1 L F\n
+G 0 -> 0 L I\nG 1 -> 1 L G\nG 2 -> 1 R H\n
+H 0 -> 0 R E\nH 1 -> 1 R H\n
+I 0 -> 0 R A\nI 1 -> 1 L I\n
+J 0 -> 0 R Z\nJ 1 -> 0 R J`,
+    bb3: `// Input must be empty.\n\n
 A 0 -> 1 R B\nA 1 -> 1 R Z\n
 B 0 -> 1 L B\nB 1 -> 0 R C\n
 C 0 -> 1 L C\nC 1 -> 1 L A`,
-    bb4: `// Empty the tape input before running this preset.\n\n
+    bb4: `// Input must be empty.\n\n
 A 0 -> 1 R B\nA 1 -> 1 L B\n
 B 0 -> 1 L A\nB 1 -> 0 L C\n
 C 0 -> 1 R Z\nC 1 -> 1 L D\n
 D 0 -> 1 R D\nD 1 -> 0 R A`,
-    bb5: `// Empty the tape input before running this preset.\n\n
+    bb5: `// Input must be emptyt.\n\n
 A 0 -> 1 R B\nA 1 -> 1 L C\n
 B 0 -> 1 R C\nB 1 -> 1 R B\n
 C 0 -> 1 R D\nC 1 -> 0 L E\n
@@ -206,6 +255,9 @@ function move_head(move) {
 
 function step() {
     if (halted) {return;}
+
+    history.push({"tape": {...tape}, "head": head, "state": state, "halted": halted});
+    if (history.length > memory) {history.shift();}
 
     const symbol = read_cell(head);
     let rule = read_rules(state, symbol);
@@ -249,6 +301,18 @@ function toggle_run() {
     }
 }
 
+// Undo step
+
+function undo() {
+    if (history.length <= 0) return;
+    const prev = history.pop();
+    tape = {...prev.tape};
+    head = prev.head;
+    state = prev.state;
+    halted = prev.halted;
+    render_tape();
+}
+
 // Speed control
 
 speed_slider_el.addEventListener("input", () => {
@@ -277,8 +341,9 @@ function reset() {
 
     last_move = "R";
 
+    symbol_colors = {};
+
     rules = parse_rules(document.getElementById("tm_code").value);
-    document.getElementById("run").disabled = false;
     render_tape();
     stop_run();
 }

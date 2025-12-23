@@ -26,10 +26,12 @@
     <label>Preset examples:</label>
     <select id="preset_select">
     <option value="">Select preset</option>
-    <option value="increment">Unary increment</option>
-    <option value="decrement">Unary decrement</option>
-    <option value="zero">Unary set to 0</option>
-    <option value="double">Unary double</option>
+    <option value="increment">Increment</option>
+    <option value="decrement">Decrement</option>
+    <option value="zero">Set to 0</option>
+    <option value="double">Double</option>
+    <option value="addition">Addition</option>
+    <option value="multiplication">Multiplication</option>
     <option value="bb3">BB(3) champion</option>
     <option value="bb4">BB(4) champion</option>
     <option value="bb5">BB(5) champion</option>
@@ -44,6 +46,7 @@
 
     <div class="controls">
     <button id="step" onclick="step()">Step</button>
+    <button id="undo" onclick="undo()">Undo</button>
     <button id="run" onclick="toggle_run()">Run</button>
     <button id="reset" onclick="reset()">Reset</button>
 
