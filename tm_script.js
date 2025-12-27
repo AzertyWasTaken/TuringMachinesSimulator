@@ -16,27 +16,67 @@ let running = false;
 let runInterval = null;
 let run_delay = 200;
 
+let explore_symbol_colors = "#C0A0A0";
 let symbol_colors = {};
+let symbol_numbers = {};
+let state_colors = {};
+
 const palette = [
-    "#FF6060",
-    "#4080FF",
-    "#60FF60",
-    "#FFFF40",
-    "#FF60FF",
-    "#60E0FF",
+    "#FF4040",
+    "#FFC040",
+    "#40A0FF",
+    "#80FF40",
+    "#C040FF",
+    "#40FFE0",
+    "#C0C040",
+    "#FF40E0",
 ];
 
 let history = [];
-const memory = 256;
+const memory = 65536;
+
+let cell_size = 4;
+const scroll_speed = 16;
+let canvas_row = 0;
+let canvas_pos_y = 0;
 
 // DOM elements
 
 const tm_code_el = document.getElementById("tm_code");
 const line_numbers_el = document.getElementById("line_numbers");
 const preset_select_el = document.getElementById("preset_select");
+const run_el = document.getElementById("run");
+const explore_el = document.getElementById("explore");
+const canvas_el = document.getElementById("canvas");
+const canvas_ctx = canvas_el.getContext("2d");
+canvas_ctx.willReadFrequently = true;
+
 const speed_slider_el = document.getElementById("speed_slider");
 const speed_label_el = document.getElementById("speed_label");
-const run_el = document.getElementById("run");
+
+const zoom_slider_el = document.getElementById("zoom_slider");
+const zoom_label_el = document.getElementById("zoom_label");
+
+// Colors
+
+function adjust_brightness(hex, factor) {
+    hex = hex.replace(/^#/, "");
+
+    let r = parseInt(hex.slice(0, 2), 16);
+    let g = parseInt(hex.slice(2, 4), 16);
+    let b = parseInt(hex.slice(4, 6), 16);
+
+    r = Math.min(255, Math.max(0, Math.round(r * factor)));
+    g = Math.min(255, Math.max(0, Math.round(g * factor)));
+    b = Math.min(255, Math.max(0, Math.round(b * factor)));
+
+    return (
+        "#" +
+        r.toString(16).padStart(2, "0") +
+        g.toString(16).padStart(2, "0") +
+        b.toString(16).padStart(2, "0")
+    ).toUpperCase();
+}
 
 // State names
 
@@ -45,6 +85,10 @@ const symbols_alphabet = "0123456789";
 
 function state_name(n) {return states_alphabet[n];}
 function symbol_name(n) {return symbols_alphabet[n];}
+
+function object_length(object) {
+    return Object.keys(object).length;
+}
 
 // Line numbers
 
@@ -68,13 +112,16 @@ update_line_numbers();
 
 // Parse TM code
 
-function object_length(object) {
-    return Object.keys(object).length;
-}
-
 function assign_symbol_color(symbol) {
     if (symbol != default_symbol && !(symbol in symbol_colors)) {
         symbol_colors[symbol] = palette[object_length(symbol_colors) % palette.length];
+        symbol_numbers[symbol] = object_length(symbol_colors);
+    }
+}
+
+function assign_state_color(state) {
+    if (!(state in state_colors)) {
+        state_colors[state] = palette[object_length(state_colors) % palette.length];
     }
 }
 
@@ -99,7 +146,11 @@ function parse_rules(code) {
         rule.move = move;
         rule.next = next;
 
+        assign_symbol_color(read);
         assign_symbol_color(write);
+
+        assign_state_color(state);
+        assign_state_color(next);
     }
     return new_rules;
 }
@@ -169,7 +220,7 @@ function render_tape() {
 
         cell.className = "cell" + (i == head ? " head" : "");
         cell.textContent = symbol;
-        cell.style.color = i == head ? "#FFFFFF" : (symbol_colors[symbol] ??= "#FFFFFF");
+        cell.style.color = i == head ? "#FFFFFF" : symbol_colors[symbol] ?? "#FFFFFF";
         tape_div.appendChild(cell);
     }
 
@@ -324,6 +375,14 @@ speed_slider_el.addEventListener("input", () => {
     }
 });
 
+// Zoom control
+
+zoom_slider_el.addEventListener("input", () => {
+    cell_size = Number(zoom_slider_el.value);
+    zoom_label_el.textContent = `Zoom: ${cell_size}px`;
+    draw_explore_canvas();
+});
+
 // Reset TM
 
 function reset() {
@@ -338,10 +397,13 @@ function reset() {
 
     steps = 0;
     halted = false;
+    history = [];
 
     last_move = "R";
-
+    
     symbol_colors = {};
+    symbol_numbers = {};
+    canvas_pos_y = 0;
 
     rules = parse_rules(document.getElementById("tm_code").value);
     render_tape();
@@ -349,3 +411,54 @@ function reset() {
 }
 
 reset();
+
+// Draw explore canvas
+
+function draw_row(step) {
+    const width_cells = Math.floor(canvas_el.width / cell_size);
+    const half = Math.floor(width_cells / 2);
+
+    for (let x = 0; x < width_cells; x++) {
+        const tape_pos = x - half;
+
+        if (tape_pos == step.head) {
+            canvas_ctx.fillStyle = state_colors[step.state];
+            canvas_ctx.fillRect(x * cell_size, canvas_row * cell_size, cell_size, cell_size);
+
+        } else {
+            const symbol = step.tape[tape_pos] ?? default_symbol;
+
+            if (symbol != default_symbol) {
+                canvas_ctx.fillStyle = adjust_brightness(explore_symbol_colors,
+                    symbol_numbers[symbol] / object_length(symbol_numbers));
+                canvas_ctx.fillRect(x * cell_size, canvas_row * cell_size, cell_size, cell_size);
+            }
+        }
+    }
+    canvas_row++;
+}
+
+function draw_explore_canvas() {
+    if (!canvas_ctx) {return;}
+
+    canvas_ctx.clearRect(0, 0, canvas_el.width, canvas_el.height);
+    canvas_row = 0;
+
+    const start_step = Math.floor(canvas_pos_y / cell_size);
+    const rows_count = Math.floor(canvas_el.height / cell_size);
+    
+    for (i = Math.min(start_step, history.length); i < Math.min(start_step + rows_count, memory); i++) {
+        if (object_length(history) <= i) {step();}
+        if (i >= start_step && history[i]) {draw_row(history[i]);}
+    }
+}
+
+canvas_el.addEventListener("wheel", e => {
+    e.preventDefault();
+
+    canvas_pos_y += Math.sign(e.deltaY) * cell_size * scroll_speed;
+    canvas_pos_y = Math.max(0, canvas_pos_y);
+    console.log(canvas_pos_y)
+
+    draw_explore_canvas();
+})

@@ -21,6 +21,12 @@ hr {
     border: 2px solid #404040;
 }
 
+canvas {
+    margin-top: 20px;
+    border: 1px solid #404040;
+    background: #000000;
+}
+
 /* Scrollbar */
 
 ::-webkit-scrollbar {

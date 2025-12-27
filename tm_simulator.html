@@ -70,6 +70,13 @@
     <button id="import" onclick="import_tm()">Import</button>
     </div>
 
+    <div class="controls">
+    <button id="explore" onclick="draw_explore_canvas()">Explore</button>
+    <input type="range" id="zoom_slider" min="2" max="8" step="1" value="4" />
+    <span id="zoom_label">Zoom: 200ms</span>
+    </div>
+    <canvas id="canvas" width="960" height="800">Canvas are not accepted by your browser.</canvas>
+
     <script src="tm_script.js"></script>
 </body>
 </html>
