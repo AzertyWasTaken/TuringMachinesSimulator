@@ -119,12 +119,12 @@ export const CHAMPIONS = {
 
     // Semi-Infinite Tape Terminating Turmite
 
-    "BBt(2,2)": ["≥4", "1PB0TB_1TA0PB"],
-    "BBt(3,2)": ["≥23", "0PB0PC_1PC0TA_1TB1TC"],
-    "BBt(4,2)": ["≥166", "1PB0TB_0PC0TA_0PD0PB_1TB1TA"],
-    "BBt(2,3)": ["≥39", "2PB1TA1TB_2TA0TA0PB"],
-    "BBt(3,3)": ["≥134", "1PB2PC2TB_1TC0TA0PB_2TC1TA2TA"],
-    "BBt(2,4)": ["≥194", "0PB2PB3TB0PA_1TB2TB3PB3TA"],
+    "TTt(2,2)": ["≥4", "1PB0TB_1TA0PB"],
+    "TTt(3,2)": ["≥23", "0PB0PC_1PC0TA_1TB1TC"],
+    "TTt(4,2)": ["≥166", "1PB0TB_0PC0TA_0PD0PB_1TB1TA"],
+    "TTt(2,3)": ["≥39", "2PB1TA1TB_2TA0TA0PB"],
+    "TTt(3,3)": ["≥134", "1PB2PC2TB_1TC0TA0PB_2TC1TA2TA"],
+    "TTt(2,4)": ["≥194", "0PB2PB3TB0PA_1TB2TB3PB3TA"],
 
     // Instructions-Limited Semi-Infinite Tape Terminating Turmite
 
