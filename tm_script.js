@@ -3,23 +3,40 @@
 const default_symbol = "0";
 const default_state = "A";
 
-let tape = {};
-let head = 0;
-let state = default_state;
-let rules = {};
-
-let last_move = "R";
-
-let steps = 0;
-let halted = false;
 let running = false;
 let runInterval = null;
 let run_delay = 200;
 
 let explore_symbol_colors = "#C0A0A0";
+let explore_symbol_pos = {};
+
 let symbol_colors = {};
-let symbol_numbers = {};
 let state_colors = {};
+
+let tm = {
+    "tape": {},
+    "head": 0,
+    "state": default_state,
+    "rules": {},
+    "last_move": "R",
+
+    "steps": 0,
+    "halted": false,
+}
+
+let canvas = {
+    "cell_size": 4,
+    "enabled": false,
+    "row": 0,
+
+    "dragging": false,
+    "pos_x": 0,
+    "pos_y": 0,
+    "last_x": 0,
+    "last_y": 0,
+}
+
+const scroll_speed = 16;
 
 const palette = [
     "#FF4040",
@@ -35,18 +52,12 @@ const palette = [
 let history = [];
 const memory = 65536;
 
-let cell_size = 4;
-const scroll_speed = 16;
-let canvas_row = 0;
-let canvas_pos_y = 0;
-
 // DOM elements
 
 const tm_code_el = document.getElementById("tm_code");
 const line_numbers_el = document.getElementById("line_numbers");
 const preset_select_el = document.getElementById("preset_select");
-const run_el = document.getElementById("run");
-const explore_el = document.getElementById("explore");
+
 const canvas_el = document.getElementById("canvas");
 const canvas_ctx = canvas_el.getContext("2d");
 canvas_ctx.willReadFrequently = true;
@@ -57,7 +68,7 @@ const speed_label_el = document.getElementById("speed_label");
 const zoom_slider_el = document.getElementById("zoom_slider");
 const zoom_label_el = document.getElementById("zoom_label");
 
-// Colors
+// Basic helpers
 
 function adjust_brightness(hex, factor) {
     hex = hex.replace(/^#/, "");
@@ -77,6 +88,16 @@ function adjust_brightness(hex, factor) {
         b.toString(16).padStart(2, "0")
     ).toUpperCase();
 }
+
+function copy(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
+function button(btn, f) {
+    document.getElementById(btn).addEventListener("click", f);
+}
+
+const DEF_TM = copy(tm);
 
 // State names
 
@@ -115,7 +136,7 @@ update_line_numbers();
 function assign_symbol_color(symbol) {
     if (symbol != default_symbol && !(symbol in symbol_colors)) {
         symbol_colors[symbol] = palette[object_length(symbol_colors) % palette.length];
-        symbol_numbers[symbol] = object_length(symbol_colors);
+        explore_symbol_pos[symbol] = object_length(symbol_colors);
     }
 }
 
@@ -172,11 +193,11 @@ function parse_standard_format(code) {
     let new_code = "";
     const state_rules = code.split("_");
 
-    for (st = 0; st < state_rules.length; st++) {
+    for (let st = 0; st < state_rules.length; st++) {
         const state_rule = state_rules[st];
         const symbol_rules = state_rule.match(/.{1,3}/g);
 
-        for (sy = 0; sy < symbol_rules.length; sy++) {
+        for (let sy = 0; sy < symbol_rules.length; sy++) {
             const symbol_rule = symbol_rules[sy];
             if (!is_rule_defined(symbol_rule)) {continue;}
 
@@ -194,14 +215,16 @@ function import_tm() {
     update_line_numbers();
 }
 
+button("import", import_tm)
+
 // Tape helpers
 
 function read_cell(pos) {
-    return tape[pos] ?? default_symbol;
+    return tm.tape[pos] ?? default_symbol;
 }
 
 function read_rules(state, symbol) {
-    return (rules[state] ?? {})[symbol];
+    return (tm.rules[state] ?? {})[symbol];
 }
 
 // Render tape
@@ -214,72 +237,29 @@ function render_tape() {
     const visible_cells = Math.floor(tape_div.offsetWidth / cell_width)
     const half = Math.floor(visible_cells / 2)
 
-    for (let i = head - half; i <= head + half; i++) {
+    for (let i = tm.head - half; i <= tm.head + half; i++) {
         const cell = document.createElement("div");
         const symbol = read_cell(i);
 
-        cell.className = "cell" + (i == head ? " head" : "");
+        cell.className = "cell" + (i == tm.head ? " head" : "");
         cell.textContent = symbol;
-        cell.style.color = i == head ? "#FFFFFF" : symbol_colors[symbol] ?? "#FFFFFF";
+        cell.style.color = i == tm.head ? "#FFFFFF" : symbol_colors[symbol] ?? "#FFFFFF";
         tape_div.appendChild(cell);
     }
 
     document.getElementById("status").textContent =
-    (halted ? "Halted, " : "") + `State: ${state}, Head: ${head}, Steps: ${steps}`;
+    (tm.halted ? "Halted, " : "") + `State: ${tm.state}, Head: ${tm.head}, Steps: ${tm.steps}`;
 
-    run_el.disabled = halted;
+    document.getElementById("toggle_run").disabled = tm.halted;
 }
+
+render_tape();
 
 window.addEventListener("resize", render_tape);
 
 // Presets
 
-const PRESETS = {
-    increment: `// Input must be a string of 1s.\n\n
-A 0 -> 1 L B\nA 1 -> 1 L A\n
-B 0 -> 0 R Z`,
-    decrement: `// Input must be a string of 1s.\n\n
-A 1 -> 0 R Z`,
-    zero: `// Input must be a string of 1s.\n\n
-A 0 -> 0 R Z\nA 1 -> 0 R A`,
-    double: `// Input must be a string of 1s.\n\n
-A 0 -> 0 R Z\nA 1 -> 0 R B\n
-B 0 -> 0 R C\nB 1 -> 1 R B\n
-C 1 -> 1 R C\nC 0 -> 1 R D\n
-D 0 -> 1 L E\n
-E 0 -> 0 L F\nE 1 -> 1 L E\n
-F 0 -> 0 R A\nF 1 -> 1 L F`,
-    addition: `// Input must be two strings of 1s separated by a 0.\n\n
-A 1 -> 0 R B\n
-B 0 -> 1 L C\nB 1 -> 1 R B\n
-C 0 -> 0 R Z\nC 1 -> 1 L C`,
-    multiplication: `// Input must be two strings of 1s separated by a 0.\n\n
-A 0 -> 0 R J\nA 1 -> 0 R B\n
-B 0 -> 0 R C\nB 1 -> 1 R B\n
-C 0 -> 0 L G\nC 1 -> 1 R D\n
-D 0 -> 0 R E\nD 1 -> 2 R D\n
-E 0 -> 1 L F\nE 1 -> 1 R E\n
-F 0 -> 0 L G\nF 1 -> 1 L F\n
-G 0 -> 0 L I\nG 1 -> 1 L G\nG 2 -> 1 R H\n
-H 0 -> 0 R E\nH 1 -> 1 R H\n
-I 0 -> 0 R A\nI 1 -> 1 L I\n
-J 0 -> 0 R Z\nJ 1 -> 0 R J`,
-    bb3: `// Input must be empty.\n\n
-A 0 -> 1 R B\nA 1 -> 1 R Z\n
-B 0 -> 1 L B\nB 1 -> 0 R C\n
-C 0 -> 1 L C\nC 1 -> 1 L A`,
-    bb4: `// Input must be empty.\n\n
-A 0 -> 1 R B\nA 1 -> 1 L B\n
-B 0 -> 1 L A\nB 1 -> 0 L C\n
-C 0 -> 1 R Z\nC 1 -> 1 L D\n
-D 0 -> 1 R D\nD 1 -> 0 R A`,
-    bb5: `// Input must be emptyt.\n\n
-A 0 -> 1 R B\nA 1 -> 1 L C\n
-B 0 -> 1 R C\nB 1 -> 1 R B\n
-C 0 -> 1 R D\nC 1 -> 0 L E\n
-D 0 -> 1 L A\nD 1 -> 1 L D\n
-E 0 -> 1 R Z\nE 1 -> 0 L A`,
-};
+import {PRESETS} from "./presets.js";
 
 preset_select_el.addEventListener("change", () => {
     const key = preset_select_el.value;
@@ -292,48 +272,50 @@ preset_select_el.addEventListener("change", () => {
 
 function move_head(move) {
     if (move == "L") {
-        head--;
-        last_move = "L";
+        tm.head--;
+        tm.last_move = "L";
     } else if (move == "R") {
-        head++;
-        last_move = "R";
+        tm.head++;
+        tm.last_move = "R";
     } else if (move == "P") {
-        move_head(last_move);
+        move_head(tm.last_move);
     } else if (move == "T") {
-        move_head(last_move == "R" ? "L" : "R");
+        move_head(tm.last_move == "R" ? "L" : "R");
     }
 }
 
 function step() {
-    if (halted) {return;}
+    if (tm.halted) {return;}
 
-    history.push({"tape": {...tape}, "head": head, "state": state, "halted": halted});
+    history.push({"tape": copy(tm.tape), "head": tm.head, "state": tm.state, "halted": tm.halted});
     if (history.length > memory) {history.shift();}
 
-    const symbol = read_cell(head);
-    let rule = read_rules(state, symbol);
+    const symbol = read_cell(tm.head);
+    let rule = read_rules(tm.state, symbol);
 
     if (!rule || !rule.write || !rule.move || !rule.next) {
-        halted = true;
+        tm.halted = true;
         render_tape();
         stop_run();
         return;
     }
 
-    tape[head] = rule.write;
+    tm.tape[tm.head] = rule.write;
     move_head(rule.move);
-    state = rule.next;
+    tm.state = rule.next;
 
-    steps++;
+    tm.steps++;
     render_tape();
 }
+
+button("step", step);
 
 // Run and pause
 
 function start_run() {
-    if (halted) return;
+    if (tm.halted) return;
     running = true;
-    document.getElementById("run").textContent = "Pause";
+    document.getElementById("toggle_run").textContent = "Pause";
     runInterval = setInterval(step, run_delay);
 }
 
@@ -341,7 +323,7 @@ function start_run() {
 function stop_run() {
     running = false;
     clearInterval(runInterval);
-    document.getElementById("run").textContent = "Run";
+    document.getElementById("toggle_run").textContent = "Run";
 }
 
 function toggle_run() {
@@ -352,17 +334,21 @@ function toggle_run() {
     }
 }
 
+button("toggle_run", toggle_run);
+
 // Undo step
 
 function undo() {
     if (history.length <= 0) return;
     const prev = history.pop();
-    tape = {...prev.tape};
-    head = prev.head;
-    state = prev.state;
-    halted = prev.halted;
+    tm.tape = copy(prev.tape);
+    tm.head = prev.head;
+    tm.state = prev.state;
+    tm.halted = prev.halted;
     render_tape();
 }
+
+button("undo", undo);
 
 // Speed control
 
@@ -378,76 +364,79 @@ speed_slider_el.addEventListener("input", () => {
 // Zoom control
 
 zoom_slider_el.addEventListener("input", () => {
-    cell_size = Number(zoom_slider_el.value);
-    zoom_label_el.textContent = `Zoom: ${cell_size}px`;
+    canvas.cell_size = Number(zoom_slider_el.value);
+    zoom_label_el.textContent = `Zoom: ${canvas.cell_size}px`;
     draw_explore_canvas();
 });
 
 // Reset TM
 
 function reset() {
-    tape = {};
+    tm = copy(DEF_TM);
+
     const input = document.getElementById("tape_input").value;
     for (let i = 0; i < input.length; i++) {
-        tape[i] = input[i];
+        tm.tape[i] = input[i];
     }
 
-    head = 0;
-    state = document.getElementById("start_state").value || default_state;
-
-    steps = 0;
-    halted = false;
+    tm.state = document.getElementById("start_state").value || default_state;
     history = [];
-
-    last_move = "R";
     
-    symbol_colors = {};
-    symbol_numbers = {};
-    canvas_pos_y = 0;
+    explore_symbol_pos = {};
 
-    rules = parse_rules(document.getElementById("tm_code").value);
+    symbol_colors = {};
+    
+    canvas.pos_x = 0;
+    canvas.pos_y = 0;
+
+    tm.rules = parse_rules(document.getElementById("tm_code").value);
     render_tape();
     stop_run();
 }
 
-reset();
+button("reset", reset);
 
 // Draw explore canvas
 
+function draw_pixel(x, y, size) {
+    canvas_ctx.fillRect(x * size, y * size, size, size);
+}
+
 function draw_row(step) {
-    const width_cells = Math.floor(canvas_el.width / cell_size);
+    const width_cells = Math.floor(canvas_el.width / canvas.cell_size);
     const half = Math.floor(width_cells / 2);
+    const offset = Math.floor(canvas.pos_x / canvas.cell_size);
 
     for (let x = 0; x < width_cells; x++) {
-        const tape_pos = x - half;
+        const tape_pos = x - half + offset;
 
         if (tape_pos == step.head) {
             canvas_ctx.fillStyle = state_colors[step.state];
-            canvas_ctx.fillRect(x * cell_size, canvas_row * cell_size, cell_size, cell_size);
+            draw_pixel(x, canvas.row, canvas.cell_size);
 
         } else {
             const symbol = step.tape[tape_pos] ?? default_symbol;
 
             if (symbol != default_symbol) {
                 canvas_ctx.fillStyle = adjust_brightness(explore_symbol_colors,
-                    symbol_numbers[symbol] / object_length(symbol_numbers));
-                canvas_ctx.fillRect(x * cell_size, canvas_row * cell_size, cell_size, cell_size);
+                    explore_symbol_pos[symbol] / object_length(explore_symbol_pos));
+                draw_pixel(x, canvas.row, canvas.cell_size);
             }
         }
     }
-    canvas_row++;
+    canvas.row++;
 }
 
 function draw_explore_canvas() {
-    if (!canvas_ctx) {return;}
+    if (!canvas_ctx || !canvas.enabled) {return;}
 
     canvas_ctx.clearRect(0, 0, canvas_el.width, canvas_el.height);
-    canvas_row = 0;
+    canvas.row = 0;
 
-    const start_step = Math.floor(canvas_pos_y / cell_size);
-    const rows_count = Math.floor(canvas_el.height / cell_size);
+    const start_step = Math.floor(canvas.pos_y / canvas.cell_size);
+    const rows_count = Math.floor(canvas_el.height / canvas.cell_size);
     
-    for (i = Math.min(start_step, history.length); i < Math.min(start_step + rows_count, memory); i++) {
+    for (let i = Math.min(start_step, history.length); i < Math.min(start_step + rows_count, memory); i++) {
         if (object_length(history) <= i) {step();}
         if (i >= start_step && history[i]) {draw_row(history[i]);}
     }
@@ -456,9 +445,41 @@ function draw_explore_canvas() {
 canvas_el.addEventListener("wheel", e => {
     e.preventDefault();
 
-    canvas_pos_y += Math.sign(e.deltaY) * cell_size * scroll_speed;
-    canvas_pos_y = Math.max(0, canvas_pos_y);
-    console.log(canvas_pos_y)
+    canvas.pos_y += Math.sign(e.deltaY) * canvas.cell_size * scroll_speed;
+    canvas.pos_y = Math.max(0, canvas.pos_y);
+    console.log(canvas.pos_y)
 
     draw_explore_canvas();
 })
+
+canvas_el.addEventListener("mousedown", e => {
+    canvas.dragging = true;
+    canvas.last_x = e.clientX;
+    canvas.last_y = e.clientY;
+});
+
+window.addEventListener("mouseup", () => {
+    canvas.dragging = false;
+});
+
+window.addEventListener("mousemove", e => {
+    if (!canvas.dragging) {return;}
+
+    const dx = e.clientX - canvas.last_x;
+    const dy = e.clientY - canvas.last_y;
+
+    canvas.pos_x -= dx;
+    canvas.pos_y = Math.max(canvas.pos_y - dy, 0);
+
+    canvas.last_x = e.clientX;
+    canvas.last_y = e.clientY;
+
+    draw_explore_canvas();
+});
+
+function explore() {
+    canvas.enabled = true;
+    draw_explore_canvas();
+}
+
+button("explore", explore);

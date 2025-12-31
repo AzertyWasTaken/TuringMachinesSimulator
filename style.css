@@ -27,6 +27,42 @@ canvas {
     background: #000000;
 }
 
+a {
+    color: #FFE040;
+}
+
+ul li {
+    padding: 4px;
+}
+
+/* Table */
+
+caption {
+    padding-top: 20px;
+    padding-bottom: 12px;
+    font-size: 20px;
+    text-align: left;
+}
+
+.tables {
+    gap: 20px;
+    padding-bottom: 12px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid #404040;
+    background: #181818;
+    padding: 6px;
+}
+
+th {
+    background-color: #282828;
+}
+
 /* Scrollbar */
 
 ::-webkit-scrollbar {

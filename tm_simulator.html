@@ -45,10 +45,10 @@
     </div>
 
     <div class="controls">
-    <button id="step" onclick="step()">Step</button>
-    <button id="undo" onclick="undo()">Undo</button>
-    <button id="run" onclick="toggle_run()">Run</button>
-    <button id="reset" onclick="reset()">Reset</button>
+    <button id="step">Step</button>
+    <button id="undo">Undo</button>
+    <button id="toggle_run">Run</button>
+    <button id="reset">Reset</button>
 
     <input type="range" id="speed_slider" min="50" max="1000" step="50" value="200" />
     <span id="speed_label">Speed: 200ms</span>
@@ -67,16 +67,16 @@
     <div class="controls">
     <label>Import (standard format):</label>
     <input type="text" id="standard_format" value="" />
-    <button id="import" onclick="import_tm()">Import</button>
+    <button id="import">Import</button>
     </div>
 
     <div class="controls">
-    <button id="explore" onclick="draw_explore_canvas()">Explore</button>
+    <button id="explore">Explore</button>
     <input type="range" id="zoom_slider" min="2" max="8" step="1" value="4" />
-    <span id="zoom_label">Zoom: 200ms</span>
+    <span id="zoom_label">Zoom: 4px</span>
     </div>
     <canvas id="canvas" width="960" height="800">Canvas are not accepted by your browser.</canvas>
 
-    <script src="tm_script.js"></script>
+    <script type="module" src="tm_script.js"></script>
 </body>
 </html>
