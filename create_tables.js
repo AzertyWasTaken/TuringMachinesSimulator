@@ -1,26 +1,40 @@
 import {CHAMPIONS} from "./champions_list.js";
 
+const sets = [
+    ["Turing Machine", "bb"],
+    ["Terminating Turmite", "tt"],
+    ["Instructions-Limited", "bbi"],
+    ["States & Symbols", "ss"],
+    ["Uniform-Action", "bbu"]
+];
+
 const functions = {
-    "BB": ["Busy Beaver", new Set()],
-    "BBi": ["Instructions-Limited Busy Beaver", new Set("bbi")],
-    "BBu": ["Uniform-Action Busy Beaver", new Set()],
+    "BB": ["Busy Beaver", ["bb", "ss"]],
+    "BBi": ["Instructions-Limited Busy Beaver", ["bb", "bbi"]],
+    "BBu": ["Uniform-Action Busy Beaver", ["bb", "bbu"]],
 
-    "BLB": ["Blanking Busy Beaver", new Set()],
-    "BLBi": ["Instructions-Limited Blanking Busy Beaver", new Set("bbi")],
+    "BLB": ["Blanking Busy Beaver", ["bb", "ss"]],
+    "BLBi": ["Instructions-Limited Blanking Busy Beaver", ["bb", "bbi"]],
+    "BLBu": ["Uniform-Action Blanking Busy Beaver", ["bb", "bbu"]],
 
-    "BBt": ["Semi-Infinite Tape Busy Beaver", new Set()],
-    "BBti": ["Instructions-Limited Semi-Infinite Tape Busy Beaver", new Set("bbi")],
+    "BBt": ["Semi-Infinite Tape Busy Beaver", ["bb", "ss"]],
+    "BBti": ["Instructions-Limited Semi-Infinite Tape Busy Beaver", ["bb", "bbi"]],
+    "BBtu": ["Uniform-Action Semi-Infinite Tape Busy Beaver", ["bb", "bbu"]],
 
-    "TT": ["Terminating Turmite", new Set()],
-    "TTi": ["Instructions-Limited Terminating Turmite", new Set("bbi")],
-    "TTu": ["Uniform-Action Terminating Turmite", new Set()],
+    "TT": ["Terminating Turmite", ["tt", "ss"]],
+    "TTi": ["Instructions-Limited Terminating Turmite", ["tt", "bbi"]],
+    "TTu": ["Uniform-Action Terminating Turmite", ["tt", "bbu"]],
 
-    "TLT": ["Blanking Terminating Turmite", new Set()],
-    "TLTi": ["Instructions-Limited Blanking Terminating Turmite", new Set("bbi")],
-    
-    "TTt": ["Semi-Infinite Tape Terminating Turmite", new Set()],
-    "TTti": ["Instructions-Limited Semi-Infinite Tape Terminating Turmite", new Set("bbi")],
+    "TLT": ["Blanking Terminating Turmite", ["tt", "ss"]],
+    "TLTi": ["Instructions-Limited Blanking Terminating Turmite", ["tt", "bbi"]],
+    "TLTu": ["Uniform-Action Blanking Terminating Turmite", ["tt", "bbu"]],
+
+    "TTt": ["Semi-Infinite Tape Terminating Turmite", ["tt", "ss"]],
+    "TTti": ["Instructions-Limited Semi-Infinite Tape Terminating Turmite", ["tt", "bbi"]],
+    "TTtu": ["Uniform-Action Semi-Infinite Tape Terminating Turmite", ["tt", "bbu"]],
 };
+
+// Create groups
 
 const groups = {};
 
@@ -43,7 +57,30 @@ for (const key in CHAMPIONS) {
     });
 }
 
-// Render tables
+// Create buttons
+
+const filters_el = document.getElementById("filters");
+
+function create_button(text, set) {
+    const btn = document.createElement("button");
+    btn.textContent = text;
+    btn.onclick = () => {
+        document.querySelectorAll("table").forEach(t => {
+                const array = t.dataset.function.split(",");
+                t.style.display = (!set || array.includes(set)) ? "" : "none";
+            }
+        );
+    };
+    filters_el.appendChild(btn);
+}
+
+create_button("All", null);
+
+sets.forEach(info => {
+    create_button(info[0], info[1]);
+});
+
+// Create tables
 
 function row(str) {return `<td><code>${str}</code></td>`;}
 
@@ -81,6 +118,7 @@ function create_table() {
         });
 
         const table = document.createElement("table");
+        table.dataset.function = functions[fname][1];
         table.innerHTML = create_HTML(fname, rows);
         tables_el.appendChild(table);
     }
