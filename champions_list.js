@@ -106,7 +106,7 @@ export const CHAMPIONS = {
     "TTi(4)": ["≥20", "1TB------_1PA2PB0PB"],
     "TTi(5)": ["≥223", "1TB0PA2PA_2PA---1PA"],
     "TTi(6)": [">295", "1TA2PA0TB_---1PC---_1PA0TC---"],
-    "TTi(7)": ["≥3.467e15", "1TB3TB2PB---_2TB1PA0PA2TB"],
+    "TTi(7)": ["≥3.467e15", "1TA2PB3TB---_3TA1PB1TA1PA"],
 
     // Uniform-Action Terminating Turmite
 

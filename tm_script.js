@@ -7,7 +7,8 @@ let running = false;
 let runInterval = null;
 let run_delay = 200;
 
-let explore_symbol_colors = "#C0A0A0";
+let explore_symbol_color = "#C09090";
+let undefined_symbol_color = "#E0B0B0";
 let explore_symbol_pos = {};
 
 let symbol_colors = {};
@@ -34,9 +35,11 @@ let canvas = {
     "pos_y": 0,
     "last_x": 0,
     "last_y": 0,
+
+    "rendering": false,
 }
 
-const scroll_speed = 16;
+const scroll_speed = 128;
 
 const palette = [
     "#FF4040",
@@ -168,10 +171,7 @@ function parse_rules(code) {
         rule.next = next;
 
         assign_symbol_color(read);
-        assign_symbol_color(write);
-
         assign_state_color(state);
-        assign_state_color(next);
     }
     return new_rules;
 }
@@ -196,6 +196,7 @@ function parse_standard_format(code) {
     for (let st = 0; st < state_rules.length; st++) {
         const state_rule = state_rules[st];
         const symbol_rules = state_rule.match(/.{1,3}/g);
+        if (!symbol_rules) {return "";}
 
         for (let sy = 0; sy < symbol_rules.length; sy++) {
             const symbol_rule = symbol_rules[sy];
@@ -287,7 +288,8 @@ function move_head(move) {
 function step() {
     if (tm.halted) {return;}
 
-    history.push({"tape": copy(tm.tape), "head": tm.head, "state": tm.state, "halted": tm.halted});
+    history.push({"tape": copy(tm.tape), "head": tm.head,
+        "state": tm.state, "halted": tm.halted});
     if (history.length > memory) {history.shift();}
 
     const symbol = read_cell(tm.head);
@@ -405,21 +407,24 @@ function draw_pixel(x, y, size) {
 function draw_row(step) {
     const width_cells = Math.floor(canvas_el.width / canvas.cell_size);
     const half = Math.floor(width_cells / 2);
-    const offset = Math.floor(canvas.pos_x / canvas.cell_size);
+    const offset = Math.floor(canvas.pos_x);
 
     for (let x = 0; x < width_cells; x++) {
         const tape_pos = x - half + offset;
 
         if (tape_pos == step.head) {
-            canvas_ctx.fillStyle = state_colors[step.state];
+            canvas_ctx.fillStyle = state_colors[step.state] ?
+            state_colors[step.state] : "#FFFFFF";
             draw_pixel(x, canvas.row, canvas.cell_size);
 
         } else {
             const symbol = step.tape[tape_pos] ?? default_symbol;
 
             if (symbol != default_symbol) {
-                canvas_ctx.fillStyle = adjust_brightness(explore_symbol_colors,
-                    explore_symbol_pos[symbol] / object_length(explore_symbol_pos));
+                const color = explore_symbol_pos[symbol];
+                canvas_ctx.fillStyle = color ? adjust_brightness(explore_symbol_color,
+                    color / object_length(explore_symbol_pos)) : undefined_symbol_color;
+
                 draw_pixel(x, canvas.row, canvas.cell_size);
             }
         }
@@ -428,26 +433,29 @@ function draw_row(step) {
 }
 
 function draw_explore_canvas() {
-    if (!canvas_ctx || !canvas.enabled) {return;}
+    if (!canvas_ctx || !canvas.enabled || canvas.rendering) {return;}
+    canvas.rendering = true;
 
     canvas_ctx.clearRect(0, 0, canvas_el.width, canvas_el.height);
     canvas.row = 0;
 
-    const start_step = Math.floor(canvas.pos_y / canvas.cell_size);
+    const start_step = Math.floor(canvas.pos_y);
     const rows_count = Math.floor(canvas_el.height / canvas.cell_size);
-    
-    for (let i = Math.min(start_step, history.length); i < Math.min(start_step + rows_count, memory); i++) {
+
+    for (let i = Math.min(start_step, history.length);
+    i < Math.min(start_step + rows_count, memory); i++) {
         if (object_length(history) <= i) {step();}
         if (i >= start_step && history[i]) {draw_row(history[i]);}
     }
+
+    canvas.rendering = false;
 }
 
 canvas_el.addEventListener("wheel", e => {
     e.preventDefault();
 
-    canvas.pos_y += Math.sign(e.deltaY) * canvas.cell_size * scroll_speed;
+    canvas.pos_y += Math.sign(e.deltaY) * scroll_speed / canvas.cell_size;
     canvas.pos_y = Math.max(0, canvas.pos_y);
-    console.log(canvas.pos_y)
 
     draw_explore_canvas();
 })
@@ -468,8 +476,8 @@ window.addEventListener("mousemove", e => {
     const dx = e.clientX - canvas.last_x;
     const dy = e.clientY - canvas.last_y;
 
-    canvas.pos_x -= dx;
-    canvas.pos_y = Math.max(canvas.pos_y - dy, 0);
+    canvas.pos_x -= dx / canvas.cell_size;
+    canvas.pos_y = Math.max(canvas.pos_y - dy  / canvas.cell_size, 0);
 
     canvas.last_x = e.clientX;
     canvas.last_y = e.clientY;
