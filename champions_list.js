@@ -1,4 +1,5 @@
 export const CHAMPIONS = {
+    
     // Busy Beaver
 
     "BB(2,2)": ["=6", "1RB1LB_1LA---"],
@@ -39,11 +40,11 @@ export const CHAMPIONS = {
 
     // Blanking Busy Beaver
 
-    "BLB(2,2)": ["≥8", "1RB0RA_1LB1LA"],
+    "BLB(2,2)": ["=8", "1RB0RA_1LB1LA"],
     "BLB(3,2)": ["≥34", "1RB1LB_1LA1LC_1RC0LC"],
     "BLB(4,2)": ["≥32,779,477", "1RB1LD_1RC1RB_1LC1LA_0RC0RD"],
     "BLB(2,3)": ["≥77", "1RB2LA0RB_1LA0LB1RA"],
-    "BLB(3,3)": [">723", "1RB0LB---_2LA1RB0LC_1RC0LC1LB"],
+    "BLB(3,3)": ["≥e42,745", "1RB2RB1LA_2LC0LB2LB_2RC2RA0LC"],
     "BLB(2,4)": ["≥1.367e12", "1RB2RA1RA2RB_2LB3LA0RB0RA"],
 
     // Instructions-Limited Blanking Busy Beaver
@@ -52,50 +53,49 @@ export const CHAMPIONS = {
     "BLBi(4)": ["=12", "1RB---_1RC---_1LC0RC"],
     "BLBi(5)": ["=30", "1RB------_1RC------_2LC2RC0RC"],
     "BLBi(6)": ["=77", "1RB2LA0RB_1LA0LB1RA "],
-    "BLBi(7)": [">188", "1RB---------_1LC------2LC_3RC2LB3LC0LC"],
+    "BLBi(7)": ["≥808", "1RB------_1RC------_0RD2LC---_1LD2RD0RC"],
     "BLBi(8)": ["≥1.367e12", "1RB2RA1RA2RB_2LB3LA0RB0RA"],
+    "BLBi(9)": ["≥e42,745", "1RB2RB1LA_2LC0LB2LB_2RC2RA0LC"],
 
     // Uniform-Action Blanking Busy Beaver
 
-    "BLBu(2)": ["≥3", "1RB---_0LB0LA"],
+    "BLBu(2)": ["=3", "1RB---_0LB0LA"],
     "BLBu(3)": ["≥9", "1RB---_0RC0RB_1LB1LC"],
     "BLBu(4)": ["≥133", "1RB1RA_0RC0RA_1LC1LD_0RB0RD"],
-    "BLBu(5)": ["≥1,105", "1RB1RD_1LC1LB_1RA1RB_0LE0LD_1RE1RA"],
+    "BLBu(5)": ["≥10,905", "1RB1RA_0RC0RA_1LC1LD_1LA1LE_0RC0RE"],
 
     // Semi-Infinite Tape Busy Beaver
 
-    "BBt(2,2)": ["≥3", "1RB---_1LB0RB"],
+    "BBt(2,2)": ["=3", "1RB---_1LB0RB"],
     "BBt(3,2)": ["≥12", "0RB0LB_0RC1RC_1LA0LC"],
-    "BBt(4,2)": ["≥63", "0RB0LD_0RC1LC_0RD1LA_1LB1RD "],
-    "BBt(5,2)": [">161", "1RB---_1RC0RB_0RD0RC_0RE1LB_1LD1LE "],
-    "BBt(6,2)": [">506", "1RB---_1RC---_0RD0RC_1RE1RD_1LF---_1LC1LF"],
+    "BBt(4,2)": ["≥168", "1RB1LD_1RC0RC_1RD0LA_1LA0RD "],
+    "BBt(5,2)": [">4,300", "0RB0RC_0RC0RE_0RD1LE_1LA1RD_1LC1RB"],
     "BBt(2,3)": ["≥17", "1RB0RA0RB_2LA2RB1LB"],
-    "BBt(3,3)": ["≥202", "1RB2RC1LC_0RC0RB1LA_2LA2RC1LB"],
-    "BBt(4,3)": [">425", "1RB------_1RC------_0RD0RC1LD_1LC2RD0LC"],
-    "BBt(2,4)": ["≥60", "1RB3RB0RB0RA_2LA2RB1LB3RA"],
-    "BBt(2,5)": [">169", "1RB3RB3LA2LB3RA_2LA3RA4RB0RB3RB"],
+    "BBt(3,3)": [">10,053", "0RB1LA1LB_0RC2LB1RB_1LA2LC2RC"],
+    "BBt(2,4)": ["≥88", "1RB2RB3LA2RA_1LA3LB0RB3RB"],
+    "BBt(2,5)": ["≥415", "0RB2LA1LB4RA2RB_1LA1RB3RB4LA1LA"],
+    "BBt(2,6)": [">1,429", "0RB4RB3LA2RA2LB2LA_1LA2RB5RA1RA3RA5RA"],
 
     // Instructions-Limited Semi-Infinite Tape Busy Beaver
 
-    "BBti(3)": ["≥3", "1RB---_1LB0RB"],
-    "BBti(4)": ["≥8", "1RB---_1RC---_1LC0RC"],
+    "BBti(3)": ["=3", "1RB---_1LB0RB"],
+    "BBti(4)": ["=8", "1RB---_1RC---_1LC0RC"],
     "BBti(5)": ["≥18", "1RB------_1RC------_2LC2RC0RC"],
-    "BBti(6)": ["≥36", "1RB------_1RC------_1RD------_2LD2RD0RD "],
-    "BBti(7)": ["≥93", "1RB------_0RC0RB1LC_1LB2RC0LB"],
-    "BBti(8)": ["≥425", "1RB------_1RC------_0RD0RC1LD_1LC2RD0LC"],
-    "BBti(9)": [">506", "1RB---_1RC---_0RD0RC_1RE1RD_1LF---_1LC1LF"],
+    "BBti(6)": ["≥39", "1RB------_2RC---2RB_2LC2RB0RC"],
+    "BBti(7)": ["≥155", "0RB------_0RC------_1RD2RC1LC_2LC1RD---"],
+    "BBti(8)": ["≥1,289", "0RB------_0RC------_0RD------_1RE2RD1LD_2LD1RE---"],
+    "BBti(9)": [">10,053", "0RB1LA1LB_0RC2LB1RB_1LA2LC2RC"],
 
     // Uniform-Action Semi-Infinite Tape Busy Beaver
 
-    "BBtu(2)": ["≥2", "0RB---_1LA1LB"],
-    "BBtu(3)": ["≥11", "1RB---_0RC0RB_1LB1LC"],
+    "BBtu(2)": ["=2", "0RB---_1LA1LB"],
+    "BBtu(3)": ["=11", "1RB---_0RC0RB_1LB1LC"],
     "BBtu(4)": ["≥26", "1RB---_1RC---_0RD0RC_1LC1LD"],
-    "BBtu(5)": ["≥49", "1RB---_0RC0RD_1LB1LA_0RE0RB_1LD1LE"],
-    "BBtu(6)": ["≥506", "1RB---_1RC---_0RD0RC_1RE1RD_1LF---_1LC1LF"],
+    "BBtu(5)": ["≥1,336", "0RB0RC_1RC1RB_0RD0RC_0RE---_1LE1LA"],
 
     // Terminating Turmite
 
-    "TT(2,2)": ["≥13", "1TB---_1PA0PB"],
+    "TT(2,2)": ["=13", "1TB---_1PA0PB"],
     "TT(3,2)": ["≥82", "1PB0PA_1TA0PC_1PA---"],
     "TT(4,2)": ["≥48,186", "1TB1PA_1PC0PA_1TA0PD_---1TA"],
     "TT(2,3)": ["≥223", "1TB0PA2PA_2PA---1PA"],
@@ -104,71 +104,69 @@ export const CHAMPIONS = {
 
     // Instructions-Limited Terminating Turmite
 
-    "TTi(2)": ["≥6", "0PB_1TA"],
-    "TTi(3)": ["≥13", "1TB---_1PA0PB"],
-    "TTi(4)": ["≥20", "1TB------_1PA2PB0PB"],
+    "TTi(2)": ["=6", "0PB_1TA"],
+    "TTi(3)": ["=13", "1TB---_1PA0PB"],
+    "TTi(4)": ["≥22", "1TA2PA2PB_---0PA---"],
     "TTi(5)": ["≥223", "1TB0PA2PA_2PA---1PA"],
-    "TTi(6)": [">347", "1PB3PA3TB0PA_2TA---2PA---"],
+    "TTi(6)": [">434", "1PB------_0PC2TC---_0TA0PB0PA"],
     "TTi(7)": ["≥3.467e15", "1TA2PB3TB---_3TA1PB1TA1PA"],
 
     // Uniform-Action Terminating Turmite
 
-    "TTu(2)": ["≥10", "1TA1TB_---0PA"],
+    "TTu(2)": ["=10", "1TA1TB_---0PA"],
     "TTu(3)": ["≥29", "1TB1TC_0PA0PC_0PB---"],
     "TTu(4)": ["≥316", "1PB1PA_0PC---_1TC1TD_0PA0PD"],
-    "TTu(5)": [">601", "0PB0PC_1TC1TB_0PA0PD_1PA1PE_1TA---"],
+    "TTu(5)": [">14,038", "1PB1PE_0PC0PB_0TA0TD_1PD1PA_---0TB"],
 
     // Blanking Terminating Turmite
 
     "TLT(2,2)": ["≥12", "1PB0PA_1TA0TA"],
-    "TLT(3,2)": ["≥84", "1TB1PC_1TA0PA_1PA0TB"],
-    "TLT(4,2)": [">267", "1TB0TD_1PC0PA_0PA0TD_1PD0PB"],
+    "TLT(3,2)": ["≥560", "1TB0PB_1PC0TC_1PA0PA"],
     "TLT(2,3)": ["≥108", "1TB0TA0PB_2PA2PB0PA"],
     "TLT(3,3)": [">2,122", "1TB2PA0TA_1TA0TB2PC_2PB0PA0TC"],
-    "TLT(2,4)": [">357", "1TB2TB0TB2PA_3TA2PA0PA3PB"],
+    "TLT(2,4)": [">537", "1TA0PB3TB1TB_0TA2PB3TA2PA"],
 
     // Instructions Limited Blanking Terminating Turmite
 
-    "TLTi(2)": ["≥4", "1TA0TA"],
-    "TLTi(3)": ["≥7", "1TB0TB_0PA---"],
+    "TLTi(2)": ["=4", "1TA0TA"],
+    "TLTi(3)": ["=7", "1TB0TB_0PA---"],
     "TLTi(4)": ["≥12", "1PB0PA_1TA0TA"],
     "TLTi(5)": ["≥24", "1TB2PB0PA_2TA---0TA"],
-    "TLTi(6)": ["≥108", "1TB0TA0PB_2PA2PB0PA"],
-    "TLTi(8)": [">357", "1TB2TB0TB2PA_3TA2PA0PA3PB"],
+    "TLTi(6)": ["≥560", "1TB0PB_1PC0TC_1PA0PA"],
     "TLTi(9)": [">2,122", "1TB2PA0TA_1TA0TB2PC_2PB0PA0TC"],
 
     // Uniform-Action Blanking Terminating Turmite
 
-    "TLTu(2)": ["≥7", "1TA1TB_0TB0TA"],
+    "TLTu(2)": ["=7", "1TA1TB_0TB0TA"],
     "TLTu(3)": ["≥14", "1PB1PC_0TA0TB_1PA1PB"],
     "TLTu(4)": ["≥112", "1PB1PC_0TC0TB_1PD1PA_0TD0TA"],
     "TLTu(5)": [">1,361", "1TA1TB_1PE1PC_0PD0PC_1PB1PD_0TD0TC"],
 
     // Semi-Infinite Tape Terminating Turmite
 
-    "TTt(2,2)": ["≥4", "1PB0TB_1TA0PB"],
+    "TTt(2,2)": ["=4", "1PB0TB_1TA0PB"],
     "TTt(3,2)": ["≥23", "0PB0PC_1PC0TA_1TB1TC"],
     "TTt(4,2)": ["≥166", "1PB0TB_0PC0TA_0PD0PB_1TB1TA"],
-    "TTt(6,2)": [">674", "1PB---_1PC---_1PD1PE_0PE0PD_1PF1PE_0TC0TD"],
+    "TTt(5,2)": [">1,644", "0PB0PC_0PC1TC_0PD0PE_1PE1PD_1TC1TA"],
     "TTt(2,3)": ["≥39", "1PB2TB2TA_1TA0PB0TA"],
-    "TTt(3,3)": ["≥255", "1PB0PA0PC_1PC1TA0PB_2TB2TA2TC"],
-    "TTt(2,4)": ["≥194", "0PB2PB3TB0PA_1TB2TB3PB3TA"],
+    "TTt(3,3)": [">915", "0PB2PB2PA_0PC2TA0PB_1TB1PC0TC"],
+    "TTt(2,4)": ["≥871", "1PB3TA2PB1TA_2TA0TA0PB3TB"],
 
     // Instructions-Limited Semi-Infinite Tape Terminating Turmite
 
-    "TTti(3)": ["≥3", "0PB---_1TB1PB"],
-    "TTti(4)": ["≥8", "0PB---_0PC---_1TC1PC"],
+    "TTti(3)": ["=3", "0PB---_1TB1PB"],
+    "TTti(4)": ["=8", "0PB---_0PC---_1TC1PC"],
     "TTti(5)": ["≥21", "0PB---_0PC---_0PD---_1TC0TD"],
     "TTti(6)": ["≥49", "0PB---_0PC---_0PD0TC_1TC1PD"],
-    "TTti(7)": ["≥200", "1PB------_1TB1TC2PC_2TB0PB0PC"],
-    "TTti(8)": [">438", "1PB------_1PC------_1TC1TD2PD_2TC0PC0PD"],
-    "TTti(10)": [">674", "1PB---_1PC---_1PD1PE_0PE0PD_1PF1PE_0TC0TD"],
+    "TTti(7)": ["≥232", "0PB---_0PC---_0PD---_0PE0TD_1TD1PE"],
+    "TTti(8)": [">989", "0PB---_0PC---_0PD---_0PE---_0PF0TE_1TE1PF"],
+    "TTti(9)": [">4,048", "0PB---_0PC---_0PD---_0PE---_0PF---_0PG0TF_1TF1PG"],
 
     // Uniform-Action Semi-Infinite Tape Terminating Turmite
 
-    "TTtu(2)": ["≥2", "0PB0PB_1TB1TA"],
-    "TTtu(3)": ["≥8", "1PB---_1TB1TC_0PB0PC"],
+    "TTtu(2)": ["=2", "0PB0PB_1TB1TA"],
+    "TTtu(3)": ["≥16", "0PB0PC_1PC1PB_1TA1TB"],
     "TTtu(4)": ["≥48", "1PB1PC_0PC0PB_0PD0PD_1TD1TA"],
-    "TTtu(5)": ["≥146", "1PB---_1PC1PD_0PD0PC_1PE1PD_0TB0TC"],
-    "TTtu(6)": ["≥674", "1PB---_1PC---_1PD1PE_0PE0PD_1PF1PE_0TC0TD"],
+    "TTtu(5)": ["≥450", "1PB---_0PC0PD_1TC1TB_1TA1TE_0PE0PB"],
+    "TTtu(6)": [">1,916", "0PB0PF_0PC0PE_0PD0PF_0PE0PA_1TF1TD_1PE1PC"],
 };
