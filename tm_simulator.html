@@ -18,10 +18,39 @@
     <p>Do not forget to press the Reset button before testing a preset.</p>
     <p>This simulator also supports terminating turmites (move with P and T instead of R and L).</p>
 
+    <div>
+    <button id="open_simulator">Simulator</button>
+    <button id="open_explorer">Explorer</button>
+    </div>
+    
     <hr>
 
+    <div>
+    <div id="simulator">
     <div id="status"></div>
     <div id="tape"></div>
+
+    <div>
+    <button id="step">Step</button>
+    <button id="undo">Undo</button>
+    <button id="toggle_run">Run</button>
+    <button id="reset">Reset</button>
+
+    <input type="range" id="speed_slider" min="50" max="1000" step="50" value="200" />
+    <span id="speed_label">Speed: 200ms</span>
+    </div>
+    </div>
+
+    <div id="explorer">
+    <button id="explore">Explore</button>
+    <input type="range" id="zoom_slider" min="2" max="8" step="1" value="4" />
+    <span id="zoom_label">Zoom: 4px</span>
+
+    <canvas id="canvas" width="960" height="800">Canvas are not accepted by your browser.</canvas>
+    </div>
+    </div>
+    
+    <hr>
 
     <label>Preset examples:</label>
     <select id="preset_select">
@@ -37,6 +66,10 @@
     <option value="bb5">BB(5) champion</option>
     </select>
 
+    <label>Import (standard format):</label>
+    <input type="text" id="standard_format" value="" />
+    <button id="import">Import</button>
+
     <div class="code_container">
     <div class="line_numbers" id="line_numbers"></div>
     <textarea id="tm_code" rows="10" cols="60">A 1 -> 1 R A
@@ -44,38 +77,13 @@
 // This is a comment.</textarea>
     </div>
 
-    <div class="controls">
-    <button id="step">Step</button>
-    <button id="undo">Undo</button>
-    <button id="toggle_run">Run</button>
-    <button id="reset">Reset</button>
-
-    <input type="range" id="speed_slider" min="50" max="1000" step="50" value="200" />
-    <span id="speed_label">Speed: 200ms</span>
-    </div>
-
-    <div class="controls">
+    <div>
     <label>Starting state:</label>
     <input type="text" id="start_state" value="A" />
 
     <label>Tape input:</label>
     <input type="text" id="tape_input" value="111" />
     </div>
-
-    <hr>
-
-    <div class="controls">
-    <label>Import (standard format):</label>
-    <input type="text" id="standard_format" value="" />
-    <button id="import">Import</button>
-    </div>
-
-    <div class="controls">
-    <button id="explore">Explore</button>
-    <input type="range" id="zoom_slider" min="2" max="8" step="1" value="4" />
-    <span id="zoom_label">Zoom: 4px</span>
-    </div>
-    <canvas id="canvas" width="960" height="800">Canvas are not accepted by your browser.</canvas>
 
     <script type="module" src="tm_script.js"></script>
 </body>

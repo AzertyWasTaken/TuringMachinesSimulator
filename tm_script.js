@@ -4,6 +4,8 @@ const default_symbol = "0";
 const default_state = "A";
 
 let running = false;
+let mode = "simulator";
+
 let runInterval = null;
 let run_delay = 200;
 
@@ -57,19 +59,12 @@ const memory = 65536;
 
 // DOM elements
 
-const tm_code_el = document.getElementById("tm_code");
-const line_numbers_el = document.getElementById("line_numbers");
-const preset_select_el = document.getElementById("preset_select");
+function el(id) {
+    return document.getElementById(id);
+}
 
-const canvas_el = document.getElementById("canvas");
-const canvas_ctx = canvas_el.getContext("2d");
+const canvas_ctx = el("canvas").getContext("2d");
 canvas_ctx.willReadFrequently = true;
-
-const speed_slider_el = document.getElementById("speed_slider");
-const speed_label_el = document.getElementById("speed_label");
-
-const zoom_slider_el = document.getElementById("zoom_slider");
-const zoom_label_el = document.getElementById("zoom_label");
 
 // Basic helpers
 
@@ -117,19 +112,19 @@ function object_length(object) {
 // Line numbers
 
 function update_line_numbers() {
-    const lines = tm_code_el.value.split("\n").length;
-    line_numbers_el.innerHTML = "";
+    const lines = el("tm_code").value.split("\n").length;
+    el("line_numbers").innerHTML = "";
     
     for (let i = 1; i <= lines; i++) {
         const div = document.createElement("div");
         div.textContent = i;
-        line_numbers_el.appendChild(div);
+        el("line_numbers").appendChild(div);
     }
 }
 
-tm_code_el.addEventListener("input", update_line_numbers);
-tm_code_el.addEventListener("scroll", () => {
-    line_numbers_el.scrollTop = tm_code_el.scrollTop;
+el("tm_code").addEventListener("input", update_line_numbers);
+el("tm_code").addEventListener("scroll", () => {
+    el("line_numbers").scrollTop = el("tm_code").scrollTop;
 });
 
 update_line_numbers();
@@ -150,6 +145,10 @@ function assign_state_color(state) {
 }
 
 function parse_rules(code) {
+    symbol_colors = {};
+    state_colors = {};
+    explore_symbol_pos = {};
+
     let new_rules = [];
     const lines = code.split("\n");
 
@@ -212,7 +211,7 @@ function parse_standard_format(code) {
 
 function import_tm() {
     const input = document.getElementById("standard_format").value;
-    tm_code_el.value = parse_standard_format(input);
+    el("tm_code").value = parse_standard_format(input);
     update_line_numbers();
 }
 
@@ -231,11 +230,11 @@ function read_rules(state, symbol) {
 // Render tape
 
 function render_tape() {
-    const tape_div = document.getElementById("tape");
-    tape_div.innerHTML = "";
+    if (mode != "simulator") {return;}
+    el("tape").innerHTML = "";
 
     const cell_width = 32 + 4;
-    const visible_cells = Math.floor(tape_div.offsetWidth / cell_width)
+    const visible_cells = Math.floor(el("tape").offsetWidth / cell_width)
     const half = Math.floor(visible_cells / 2)
 
     for (let i = tm.head - half; i <= tm.head + half; i++) {
@@ -245,7 +244,7 @@ function render_tape() {
         cell.className = "cell" + (i == tm.head ? " head" : "");
         cell.textContent = symbol;
         cell.style.color = i == tm.head ? "#FFFFFF" : symbol_colors[symbol] ?? "#FFFFFF";
-        tape_div.appendChild(cell);
+        el("tape").appendChild(cell);
     }
 
     document.getElementById("status").textContent =
@@ -262,10 +261,10 @@ window.addEventListener("resize", render_tape);
 
 import {PRESETS} from "./presets.js";
 
-preset_select_el.addEventListener("change", () => {
-    const key = preset_select_el.value;
+el("preset_select").addEventListener("change", () => {
+    const key = el("preset_select").value;
     if (!key) {return;}
-    tm_code_el.value = PRESETS[key];
+    el("tm_code").value = PRESETS[key];
     update_line_numbers();
 });
 
@@ -354,9 +353,9 @@ button("undo", undo);
 
 // Speed control
 
-speed_slider_el.addEventListener("input", () => {
-    run_delay = Number(speed_slider_el.value);
-    speed_label_el.textContent = `Speed: ${run_delay}ms`;
+el("speed_slider").addEventListener("input", () => {
+    run_delay = Number(el("speed_slider").value);
+    el("speed_label").textContent = `Speed: ${run_delay}ms`;
     if (running) {
         stop_run();
         start_run();
@@ -365,9 +364,9 @@ speed_slider_el.addEventListener("input", () => {
 
 // Zoom control
 
-zoom_slider_el.addEventListener("input", () => {
-    canvas.cell_size = Number(zoom_slider_el.value);
-    zoom_label_el.textContent = `Zoom: ${canvas.cell_size}px`;
+el("zoom_slider").addEventListener("input", () => {
+    canvas.cell_size = Number(el("zoom_slider").value);
+    el("zoom_label").textContent = `Zoom: ${canvas.cell_size}px`;
     draw_explore_canvas();
 });
 
@@ -384,17 +383,12 @@ function reset() {
     tm.state = document.getElementById("start_state").value || default_state;
     history = [];
     
-    explore_symbol_pos = {};
-
-    symbol_colors = {};
-    
-    canvas.pos_x = 0;
-    canvas.pos_y = 0;
-
     tm.rules = parse_rules(document.getElementById("tm_code").value);
     render_tape();
     stop_run();
 }
+
+reset();
 
 button("reset", reset);
 
@@ -405,7 +399,7 @@ function draw_pixel(x, y, size) {
 }
 
 function draw_row(step) {
-    const width_cells = Math.floor(canvas_el.width / canvas.cell_size);
+    const width_cells = Math.floor(el("canvas").width / canvas.cell_size);
     const half = Math.floor(width_cells / 2);
     const offset = Math.floor(canvas.pos_x);
 
@@ -436,11 +430,11 @@ function draw_explore_canvas() {
     if (!canvas_ctx || !canvas.enabled || canvas.rendering) {return;}
     canvas.rendering = true;
 
-    canvas_ctx.clearRect(0, 0, canvas_el.width, canvas_el.height);
+    canvas_ctx.clearRect(0, 0, el("canvas").width, el("canvas").height);
     canvas.row = 0;
 
     const start_step = Math.floor(canvas.pos_y);
-    const rows_count = Math.floor(canvas_el.height / canvas.cell_size);
+    const rows_count = Math.floor(el("canvas").height / canvas.cell_size);
 
     for (let i = Math.min(start_step, history.length);
     i < Math.min(start_step + rows_count, memory); i++) {
@@ -451,7 +445,7 @@ function draw_explore_canvas() {
     canvas.rendering = false;
 }
 
-canvas_el.addEventListener("wheel", e => {
+el("canvas").addEventListener("wheel", e => {
     e.preventDefault();
 
     canvas.pos_y += Math.sign(e.deltaY) * scroll_speed / canvas.cell_size;
@@ -460,7 +454,7 @@ canvas_el.addEventListener("wheel", e => {
     draw_explore_canvas();
 })
 
-canvas_el.addEventListener("mousedown", e => {
+el("canvas").addEventListener("mousedown", e => {
     canvas.dragging = true;
     canvas.last_x = e.clientX;
     canvas.last_y = e.clientY;
@@ -486,8 +480,34 @@ window.addEventListener("mousemove", e => {
 });
 
 function explore() {
+    reset();
+    
+    canvas.pos_x = 0;
+    canvas.pos_y = 0;
+
     canvas.enabled = true;
     draw_explore_canvas();
 }
 
 button("explore", explore);
+
+// Toggle simulator and explorer
+
+function open_simulator() {
+    mode = "simulator";
+    el("explorer").style.display = "none";
+    el("simulator").style.display = "";
+    reset();
+    render_tape();
+}
+
+function open_explorer() {
+    mode = "explorer";
+    el("explorer").style.display = "";
+    el("simulator").style.display = "none";
+}
+
+button("open_simulator", open_simulator);
+button("open_explorer", open_explorer);
+
+open_simulator();
